@@ -17,7 +17,7 @@ def make_embeddings_service(settings: Optional[Settings] = None) -> JinaEmbeddin
         settings = get_settings()
 
     # Get API key from settings
-    api_key = settings.jina_api_key
+    api_key = settings.jina.api_key
 
     return JinaEmbeddingsClient(api_key=api_key)
 
@@ -34,6 +34,6 @@ def make_embeddings_client(settings: Optional[Settings] = None) -> JinaEmbedding
         settings = get_settings()
 
     # Get API key from settings
-    api_key = settings.jina_api_key
+    api_key = settings.jina.api_key
 
     return JinaEmbeddingsClient(api_key=api_key)

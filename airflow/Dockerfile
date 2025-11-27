@@ -7,6 +7,7 @@ ENV PYTHON_VERSION=3.12
 ENV CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
 
 # Install system dependencies
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
@@ -15,6 +16,12 @@ RUN apt-get update && \
         libpq-dev \
         poppler-utils \
         tesseract-ocr \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libsm6 \
+        libxext6 \
+        libxrender-dev \
         && rm -rf /var/lib/apt/lists/*
 
 # Create airflow user with UID/GID 50000 for cross-platform compatibility

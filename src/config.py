@@ -36,7 +36,7 @@ class ArxivSettings(BaseConfigSettings):
     search_category: str = "cs.AI"
     download_max_retries: int = 3
     download_retry_delay_base: float = 5.0
-    max_concurrent_downloads: int = 5
+    max_concurrent_downloads: int = 2
     max_concurrent_parsing: int = 1
 
     namespaces: dict = {
@@ -144,6 +144,21 @@ class RedisSettings(BaseConfigSettings):
 
     # Cache settings
     ttl_hours: int = 6  # Cache TTL in hours
+    
+  
+class JinaSettings(BaseConfigSettings):
+    model_config = SettingsConfigDict(
+        env_file=[".env", str(ENV_FILE_PATH)],
+        env_prefix="JINA__",
+        extra="ignore",
+        frozen=True,
+        case_sensitive=False,
+    )
+
+    api_key: str = ""
+    base_url: str = "https://api.jina.ai/v1"
+    model: str = "jina-embeddings-v3"
+    dimensions: int = 1024  
 
 
 class Settings(BaseConfigSettings):
@@ -162,7 +177,7 @@ class Settings(BaseConfigSettings):
     ollama_timeout: int = 300
 
     # Jina AI embeddings configuration
-    jina_api_key: str = ""
+    jina: JinaSettings = Field(default_factory=JinaSettings)
 
     arxiv: ArxivSettings = Field(default_factory=ArxivSettings)
     pdf_parser: PDFParserSettings = Field(default_factory=PDFParserSettings)

@@ -19,7 +19,7 @@ default_args = {
     "email_on_retry": False,
     "retries": 2,
     "retry_delay": timedelta(minutes=30),
-    "execution_timeout": timedelta(minutes=10),  # ← ADD THIS LINE
+    "execution_timeout": timedelta(minutes=30),  # ← ADD THIS LINE
     "catchup": False,
 }
 

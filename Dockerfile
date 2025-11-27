@@ -5,6 +5,16 @@ WORKDIR /app
 # Copy configuration files
 COPY pyproject.toml uv.lock ./
 
+RUN apt-get update && \
+    apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    libgomp1 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # UV_COMPILE_BYTECODE for generating .pyc files -> faster application startup.
 # UV_LINK_MODE=copy to silence warnings about not being able to use hard links
 # since the cache and sync target are on separate file systems.

@@ -62,16 +62,35 @@ def index_papers_hybrid(**context):
             if fetch_results and fetch_results.get("papers_stored", 0) > 0:
                 from sqlalchemy import desc
 
-                papers = session.query(Paper).order_by(desc(Paper.created_at)).limit(fetch_results["papers_stored"]).all()
+                # Only index papers that have raw_text (successfully parsed PDFs)
+                papers = (
+                    session.query(Paper)
+                    .filter(Paper.raw_text.isnot(None))
+                    .order_by(desc(Paper.created_at))
+                    .limit(fetch_results["papers_stored"])
+                    .all()
+                )
             else:
                 cutoff_date = datetime.now(timezone.utc) - timedelta(days=1)
-                papers = session.query(Paper).filter(Paper.created_at >= cutoff_date).all()
+                # Only index papers that have raw_text
+                papers = (
+                    session.query(Paper)
+                    .filter(Paper.created_at >= cutoff_date)
+                    .filter(Paper.raw_text.isnot(None))
+                    .all()
+                )
 
             if not papers:
-                logger.info("No papers to index for hybrid search")
-                return {"papers_indexed": 0, "chunks_created": 0}
+                logger.info("No papers with raw_text to index for hybrid search")
+                return {
+                    "papers_processed": 0,
+                    "total_chunks_created": 0,
+                    "total_chunks_indexed": 0,
+                    "total_embeddings_generated": 0,
+                    "total_errors": 0
+                }
 
-            logger.info(f"Indexing {len(papers)} papers for hybrid search")
+            logger.info(f"Indexing {len(papers)} papers with raw_text for hybrid search")
 
             stats = asyncio.run(_index_papers_with_chunks(papers))
 
