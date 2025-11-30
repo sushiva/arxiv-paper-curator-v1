@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Annotated, Generator
+from typing import Annotated, Generator, Union
 
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from src.services.cache.client import CacheClient
 from src.services.embeddings.jina_client import JinaEmbeddingsClient
 from src.services.langfuse.client import LangfuseTracer
 from src.services.ollama.client import OllamaClient
+from src.services.openai.client import OpenAIClient
 from src.services.opensearch.client import OpenSearchClient
 from src.services.pdf_parser.parser import PDFParserService
 
@@ -71,6 +72,11 @@ def get_cache_client(request: Request) -> CacheClient | None:
     return getattr(request.app.state, "cache_client", None)
 
 
+def get_llm_client(request: Request) -> Union[OllamaClient, OpenAIClient]:
+    """Get LLM client from the request state (routes based on LLM_PROVIDER)."""
+    return request.app.state.llm_client
+
+
 # Dependency annotations
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 DatabaseDep = Annotated[BaseDatabase, Depends(get_database)]
@@ -82,3 +88,4 @@ EmbeddingsDep = Annotated[JinaEmbeddingsClient, Depends(get_embeddings_service)]
 OllamaDep = Annotated[OllamaClient, Depends(get_ollama_client)]
 LangfuseDep = Annotated[LangfuseTracer, Depends(get_langfuse_tracer)]
 CacheDep = Annotated[CacheClient | None, Depends(get_cache_client)]
+LLMDep = Annotated[Union[OllamaClient, OpenAIClient], Depends(get_llm_client)]

@@ -13,6 +13,7 @@ from src.services.cache.factory import make_cache_client
 from src.services.embeddings.factory import make_embeddings_service
 from src.services.langfuse.factory import make_langfuse_tracer
 from src.services.ollama.factory import make_ollama_client
+from src.services.openai.factory import make_openai_client
 from src.services.opensearch.factory import make_opensearch_client
 from src.services.pdf_parser.factory import make_pdf_parser_service
 
@@ -67,9 +68,18 @@ async def lifespan(app: FastAPI):
     app.state.pdf_parser = make_pdf_parser_service()
     app.state.embeddings_service = make_embeddings_service()
     app.state.ollama_client = make_ollama_client()
+
+    # Initialize LLM client based on provider
+    if settings.llm_provider == "openai":
+        app.state.llm_client = make_openai_client()
+        logger.info("Using OpenAI as LLM provider")
+    else:
+        app.state.llm_client = make_ollama_client()
+        logger.info("Using Ollama as LLM provider")
+
     app.state.langfuse_tracer = make_langfuse_tracer()
     app.state.cache_client = make_cache_client(settings)
-    logger.info("Services initialized: arXiv API client, PDF parser, OpenSearch, Embeddings, Ollama, Langfuse, Cache")
+    logger.info("Services initialized: arXiv API client, PDF parser, OpenSearch, Embeddings, LLM, Langfuse, Cache")
 
     logger.info("API ready")
     yield
