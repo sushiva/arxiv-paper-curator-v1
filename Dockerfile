@@ -2,9 +2,6 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS base
 
 WORKDIR /app
 
-# Copy configuration files
-COPY pyproject.toml uv.lock ./
-
 RUN apt-get update && \
     apt-get install -y \
     libgl1 \
@@ -20,10 +17,9 @@ RUN apt-get update && \
 # since the cache and sync target are on separate file systems.
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
-# Install dependencies
-RUN --mount=type=bind,source=uv.lock,target=/app/uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=/app/pyproject.toml \
-    uv sync --frozen --no-dev
+# Copy configuration files and install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev
 
 # Copy source code
 COPY src /app/src
