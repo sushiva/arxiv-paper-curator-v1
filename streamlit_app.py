@@ -139,13 +139,22 @@ def main():
         st.header("Ask a Question About Research Papers")
 
         # Example questions
-        with st.expander("💡 Example Questions"):
+        with st.expander("💡 Example Questions & Tips"):
+            st.info("💡 **Tip**: Ask about specific research topics, not general definitions. This system searches 100 specialized AI research papers.")
+
             st.markdown("""
-            - What papers discuss reinforcement learning?
-            - What are the latest advances in transformers?
-            - Tell me about neural network architectures for computer vision
-            - What research has been done on large language models?
-            - Explain recent work on generative AI
+            **Good questions (specific to research)**:
+            - What papers discuss reinforcement learning methods?
+            - What are the latest advances in transformer architectures?
+            - Tell me about recent work on multimodal learning
+            - What research has been done on visual reasoning?
+            - Explain recent advances in time series forecasting
+
+            **Questions that won't work well**:
+            - What is machine learning? ❌ (too general, no definitions in research papers)
+            - Explain neural networks ❌ (textbook question, not research-specific)
+
+            **Why?** The database contains recent research papers (not textbooks), so ask about specific research topics!
             """)
 
         # Query input
