@@ -191,6 +191,11 @@ class Settings(BaseConfigSettings):
     gemini_model: str = "gemini-1.5-flash"
     gemini_max_tokens: int = 2000
 
+    # Anthropic Claude configuration
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-3-5-haiku-20241022"
+    anthropic_max_tokens: int = 2000
+
     # Jina AI embeddings configuration
     jina: JinaSettings = Field(default_factory=JinaSettings)
 

@@ -260,37 +260,80 @@ async def ask_question(
                     logger.info(f"Successfully generated answer using primary LLM provider")
 
                 except Exception as primary_error:
-                    # Primary LLM failed - try OpenAI fallback
-                    logger.warning(f"Primary LLM failed: {primary_error}. Trying OpenAI fallback...")
+                    # Primary LLM failed - try 3-tier fallback strategy
+                    logger.warning(f"Tier 1 (Primary) failed: {primary_error}")
 
+                    from src.config import get_settings
+                    from src.services.gemini.client import GeminiClient
+                    from src.services.anthropic.client import AnthropicClient
+                    from src.services.openai.client import OpenAIClient
+
+                    settings = get_settings()
+
+                    # TIER 2: Try Gemini Pro (upgraded model)
                     try:
-                        from src.config import get_settings
-                        from src.services.openai.client import OpenAIClient
-
-                        # Create OpenAI client as fallback
-                        settings = get_settings()
-                        if settings.openai_api_key:
-                            fallback_client = OpenAIClient(settings)
-                            rag_response = await fallback_client.generate_rag_answer(
+                        logger.info("Tier 2: Trying Gemini Pro fallback...")
+                        if settings.gemini_api_key:
+                            gemini_pro_client = GeminiClient(settings)
+                            rag_response = await gemini_pro_client.generate_rag_answer(
                                 query=request.query,
                                 chunks=chunks,
-                                model=settings.openai_model,
+                                model="gemini-2.0-flash-exp",  # Upgraded Gemini model
                                 document_type=request.document_type
                             )
                             answer = rag_response.get("answer", "Unable to generate answer")
-                            provider_used = "openai_fallback"
-                            logger.info("Successfully generated answer using OpenAI fallback")
+                            provider_used = "gemini_pro_fallback"
+                            logger.info("✅ Tier 2 SUCCESS: Gemini Pro answered")
                         else:
-                            # No fallback available
-                            logger.error("No fallback LLM available - OpenAI API key not configured")
-                            raise primary_error
+                            raise Exception("Gemini API key not configured")
 
-                    except Exception as fallback_error:
-                        logger.error(f"Fallback LLM also failed: {fallback_error}")
-                        raise HTTPException(
-                            status_code=503,
-                            detail="LLM service temporarily unavailable. Please try again in a few moments."
-                        )
+                    except Exception as tier2_error:
+                        logger.warning(f"Tier 2 (Gemini Pro) failed: {tier2_error}")
+
+                        # TIER 3: Try Claude Haiku
+                        try:
+                            logger.info("Tier 3: Trying Claude Haiku fallback...")
+                            if settings.anthropic_api_key:
+                                claude_client = AnthropicClient(settings)
+                                rag_response = await claude_client.generate_rag_answer(
+                                    query=request.query,
+                                    chunks=chunks,
+                                    model=settings.anthropic_model,
+                                    document_type=request.document_type
+                                )
+                                answer = rag_response.get("answer", "Unable to generate answer")
+                                provider_used = "claude_fallback"
+                                logger.info("✅ Tier 3 SUCCESS: Claude Haiku answered")
+                            else:
+                                raise Exception("Anthropic API key not configured")
+
+                        except Exception as tier3_error:
+                            logger.warning(f"Tier 3 (Claude) failed: {tier3_error}")
+
+                            # TIER 4: Try OpenAI (last resort)
+                            try:
+                                logger.info("Tier 4: Trying OpenAI fallback (last resort)...")
+                                if settings.openai_api_key:
+                                    openai_client = OpenAIClient(settings)
+                                    rag_response = await openai_client.generate_rag_answer(
+                                        query=request.query,
+                                        chunks=chunks,
+                                        model=settings.openai_model,
+                                        document_type=request.document_type
+                                    )
+                                    answer = rag_response.get("answer", "Unable to generate answer")
+                                    provider_used = "openai_fallback"
+                                    logger.info("✅ Tier 4 SUCCESS: OpenAI answered")
+                                else:
+                                    raise Exception("OpenAI API key not configured")
+
+                            except Exception as tier4_error:
+                                # All 4 tiers failed
+                                logger.error(f"❌ ALL TIERS FAILED - Tier 4 (OpenAI): {tier4_error}")
+                                raise HTTPException(
+                                    status_code=503,
+                                    detail="LLM service temporarily unavailable. Please try again in a few moments."
+                                )
 
                 rag_tracer.end_generation(gen_span, answer, request.model)
 
