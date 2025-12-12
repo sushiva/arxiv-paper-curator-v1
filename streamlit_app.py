@@ -21,47 +21,37 @@ st.set_page_config(
     page_title="Research & Financial Document Curator",
     page_icon="📚",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # Collapsed for screenshot-friendly layout
 )
 
-# Custom CSS
+# Custom CSS - Ultra-minimal for screenshots
 st.markdown("""
 <style>
-    /* Reduce top padding for compact screenshots */
+    /* Ultra-compact layout for fitting query + results in one view */
     .main .block-container {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
     }
     .main-header {
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: bold;
         text-align: center;
         margin-top: 0;
-        margin-bottom: 0.3rem;
-    }
-    .sub-header {
-        font-size: 1rem;
-        text-align: center;
-        color: #666;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
     .source-box {
         background-color: #f0f2f6;
-        padding: 1rem;
+        padding: 0.5rem;
         border-radius: 0.5rem;
-        margin-top: 1rem;
+        margin-top: 0.5rem;
     }
-    .paper-card {
-        border: 1px solid #ddd;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
+    /* Reduce spacing in tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 1rem;
     }
-    .metric-card {
-        background-color: #e8f4f8;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        text-align: center;
+    /* Reduce spacing after radio buttons */
+    .stRadio {
+        margin-bottom: 0.5rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -118,9 +108,8 @@ def check_api_health() -> bool:
 def main():
     """Main Streamlit app."""
 
-    # Header
+    # Header (compact for screenshots)
     st.markdown('<div class="main-header">📚 Research & Financial Document Curator</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">AI-Powered Search for Research Papers & Financial Documents</div>', unsafe_allow_html=True)
 
     # Sidebar
     with st.sidebar:
@@ -196,14 +185,6 @@ def main():
         }
         selected_doc_type = doc_type_map[document_type]
 
-        st.divider()
-
-        # Header based on document type
-        if selected_doc_type == "financial":
-            st.header("💼 Ask Questions About Financial Documents")
-        else:
-            st.header("📚 Ask Questions About Research Papers")
-
         # Financial-specific filters
         ticker = None
         filing_types = None
@@ -222,41 +203,6 @@ def main():
                     default=["10-K"],
                     help="Select filing types to search"
                 )
-
-        # Example questions based on document type
-        with st.expander("💡 Example Questions & Tips"):
-            if selected_doc_type == "financial":
-                st.info("💡 **Tip**: Ask about company performance, risks, business segments, or financial metrics from SEC filings.")
-
-                st.markdown("""
-                **Good questions for financial documents**:
-                - What are Apple's main business segments?
-                - What are the key risk factors for Tesla?
-                - How does Microsoft describe its revenue growth?
-                - What does Google say about its advertising business?
-                - What are NVIDIA's main sources of revenue?
-
-                **Filters**:
-                - Use **ticker symbol** to search specific companies (e.g., AAPL, MSFT)
-                - Choose **filing types**: 10-K (annual) or 10-Q (quarterly)
-                """)
-            else:
-                st.info("💡 **Tip**: Ask about specific research topics, not general definitions. This system searches 100 specialized AI research papers.")
-
-                st.markdown("""
-                **Good questions (specific to research)**:
-                - What papers discuss reinforcement learning methods?
-                - What are the latest advances in transformer architectures?
-                - Tell me about recent work on multimodal learning
-                - What research has been done on visual reasoning?
-                - Explain recent advances in time series forecasting
-
-                **Questions that won't work well**:
-                - What is machine learning? ❌ (too general, no definitions in research papers)
-                - Explain neural networks ❌ (textbook question, not research-specific)
-
-                **Why?** The database contains recent research papers (not textbooks), so ask about specific research topics!
-                """)
 
         # Query input
         query_placeholder = (
