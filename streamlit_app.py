@@ -243,18 +243,14 @@ def main():
                 )
 
                 if result:
-                    # Display answer
-                    st.subheader("📝 Answer")
-                    st.markdown(result.get("answer", "No answer generated"))
+                    # Display answer with inline metrics
+                    col_heading, col_metrics = st.columns([1, 2])
+                    with col_heading:
+                        st.subheader("📝 Answer")
+                    with col_metrics:
+                        st.caption(f"📊 Chunks: {result.get('chunks_used', 0)} | Mode: {result.get('search_mode', 'N/A')} | Sources: {len(result.get('sources', []))}")
 
-                    # Display metadata
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("Chunks Used", result.get("chunks_used", 0))
-                    with col2:
-                        st.metric("Search Mode", result.get("search_mode", "N/A"))
-                    with col3:
-                        st.metric("Sources", len(result.get("sources", [])))
+                    st.markdown(result.get("answer", "No answer generated"))
 
                     # Display sources
                     if result.get("sources"):
