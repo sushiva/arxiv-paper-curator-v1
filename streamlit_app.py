@@ -180,8 +180,8 @@ def main():
     tab1, tab2 = st.tabs(["🔍 Ask Questions", "📖 About"])
 
     with tab1:
-        # Document Type Selector
-        st.subheader("📁 Select Document Type")
+        # Document Type Selector (compact spacing)
+        st.markdown("##### 📁 Select Document Type")
         document_type = st.radio(
             "Choose the type of documents to search:",
             options=["📚 arXiv Papers", "💼 Financial Documents"],
@@ -265,10 +265,9 @@ def main():
             else "e.g., What papers discuss machine learning for healthcare?"
         )
 
-        query = st.text_area(
+        query = st.text_input(
             "Enter your question:",
-            placeholder=query_placeholder,
-            height=100
+            placeholder=query_placeholder
         )
 
         col1, col2, col3 = st.columns([1, 1, 4])
