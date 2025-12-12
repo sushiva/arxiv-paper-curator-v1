@@ -130,80 +130,16 @@ def main():
 
         st.divider()
 
-        # LLM Configuration
-        st.subheader("🤖 LLM Configuration")
+        # System Info
+        st.subheader("🤖 AI System")
+        st.info("""
+        **Powered by 4-Tier LLM Fallback:**
+        - Google Gemini (Primary)
+        - Claude 3.5 Haiku
+        - OpenAI GPT-4o-mini
 
-        # Initialize session state for API keys if not exists
-        if 'llm_provider' not in st.session_state:
-            st.session_state.llm_provider = 'gemini'
-        if 'api_key_verified' not in st.session_state:
-            st.session_state.api_key_verified = False
-
-        # Provider selection
-        # Map lowercase to proper case
-        provider_map = {"gemini": "Gemini", "openai": "OpenAI", "ollama": "Ollama"}
-        default_provider = provider_map.get(st.session_state.llm_provider, "Gemini")
-
-        llm_provider = st.radio(
-            "Select Provider",
-            options=["Gemini", "OpenAI", "Ollama"],
-            index=["Gemini", "OpenAI", "Ollama"].index(default_provider),
-            horizontal=True
-        )
-
-        # API Key input (only for Gemini and OpenAI)
-        api_key = None
-        if llm_provider in ["Gemini", "OpenAI"]:
-            api_key = st.text_input(
-                f"{llm_provider} API Key",
-                type="password",
-                placeholder=f"Enter your {llm_provider} API key",
-                help=f"Get your key from: {'https://aistudio.google.com/app/apikey' if llm_provider == 'Gemini' else 'https://platform.openai.com/api-keys'}"
-            )
-
-        # Model selection based on provider
-        if llm_provider == "Gemini":
-            model = st.selectbox("Model", ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro"])
-        elif llm_provider == "OpenAI":
-            model = st.selectbox("Model", ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo"])
-        else:  # Ollama
-            model = st.text_input("Model", value="qwen2.5:7b", help="Enter Ollama model name")
-
-        # Verify connection button
-        if llm_provider in ["Gemini", "OpenAI"] and api_key:
-            if st.button("🔍 Verify Connection", use_container_width=True):
-                with st.spinner(f"Testing {llm_provider} connection..."):
-                    try:
-                        # Test the API key
-                        if llm_provider == "Gemini":
-                            import google.generativeai as genai
-                            genai.configure(api_key=api_key)
-                            genai.GenerativeModel(model).generate_content("Hi")
-                            st.success(f"✅ {llm_provider} connection verified!")
-                            st.session_state.api_key_verified = True
-                            st.session_state.llm_provider = llm_provider.lower()
-                            st.session_state.api_key = api_key
-                            st.session_state.model = model
-                        elif llm_provider == "OpenAI":
-                            from openai import OpenAI
-                            client = OpenAI(api_key=api_key)
-                            client.chat.completions.create(
-                                model=model,
-                                messages=[{"role": "user", "content": "Hi"}],
-                                max_tokens=5
-                            )
-                            st.success(f"✅ {llm_provider} connection verified!")
-                            st.session_state.api_key_verified = True
-                            st.session_state.llm_provider = llm_provider.lower()
-                            st.session_state.api_key = api_key
-                            st.session_state.model = model
-                    except Exception as e:
-                        st.error(f"❌ Connection failed: {str(e)}")
-                        st.session_state.api_key_verified = False
-
-        # Show connection status
-        if st.session_state.get('api_key_verified', False):
-            st.info(f"✓ Using {st.session_state.get('llm_provider', 'N/A').upper()} - {st.session_state.get('model', 'N/A')}")
+        *Automatic failover for 99.9% uptime*
+        """)
 
         st.divider()
 
@@ -352,8 +288,7 @@ def main():
                     top_k,
                     document_type=selected_doc_type,
                     ticker=ticker if ticker else None,
-                    filing_types=filing_types if filing_types else None,
-                    model=st.session_state.get('model', None)
+                    filing_types=filing_types if filing_types else None
                 )
 
                 if result:
